@@ -1,0 +1,830 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#16202B">
+<title>Batch-1 Attendance</title>
+<style>
+  :root{
+    --ink:#16202B; --ink-2:#41505F; --ink-3:#74838F;
+    --paper:#E9EDF1; --surface:#FFFFFF; --rule:#CBD5DE; --rule-2:#E4E9EE;
+    --brand:#26418F; --brand-tint:#EAEEF9;
+    --ok:#0E6B45; --ok-tint:#E3F3EB;
+    --warn:#8A5A00; --warn-tint:#FBF0DC;
+    --bad:#A4232B; --bad-tint:#FBE9EA;
+    --mono: ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,monospace;
+    --sans: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    --bar: repeating-linear-gradient(90deg,var(--ink) 0 2px,transparent 2px 4px,var(--ink) 4px 5px,transparent 5px 9px,var(--ink) 9px 12px,transparent 12px 14px);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:760px;margin:0 auto;padding:0 12px 90px}
+
+  header.top{background:var(--surface);border-bottom:1px solid var(--rule);position:sticky;top:0;z-index:40}
+  .barstrip{height:6px;background:var(--bar);opacity:.85}
+  .topinner{max-width:760px;margin:0 auto;padding:9px 12px;display:flex;gap:10px;align-items:center}
+  .brandmark{margin-right:auto;min-width:0}
+  .brandmark h1{font-size:15px;margin:0;font-weight:800;letter-spacing:-.02em}
+  .brandmark span{font-family:var(--mono);font-size:10px;color:var(--ink-3);letter-spacing:.07em;text-transform:uppercase}
+  .tally{display:flex;border:1px solid var(--rule);border-radius:8px;overflow:hidden;flex:none}
+  .tally div{padding:4px 11px;text-align:center;border-right:1px solid var(--rule-2)}
+  .tally div:last-child{border-right:0}
+  .tally b{display:block;font-family:var(--mono);font-size:18px;font-weight:700;line-height:1.15}
+  .tally small{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-3)}
+  .n-p b{color:var(--ok)} .n-a b{color:var(--bad)}
+
+  .session{background:var(--surface);border-bottom:1px solid var(--rule)}
+  .sinner{max-width:760px;margin:0 auto;padding:8px 12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  input[type=date]{border:1px solid var(--rule);border-radius:7px;padding:7px 9px;font-family:var(--mono);font-size:13px;background:var(--surface);color:var(--ink)}
+  .slot{display:flex;border:1px solid var(--rule);border-radius:7px;overflow:hidden;margin-left:auto}
+  .slot button{border:0;background:var(--surface);padding:7px 14px;font-weight:700;font-size:13px;cursor:pointer;color:var(--ink-2)}
+  .slot button[aria-pressed="true"]{background:var(--brand);color:#fff}
+  .locked{font-size:11px;color:var(--warn);font-weight:700}
+
+  nav.tabs{display:flex;gap:2px;margin:14px 0 12px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  nav.tabs button{background:transparent;border:0;border-bottom:2px solid transparent;padding:8px 12px;cursor:pointer;font-weight:700;font-size:14px;color:var(--ink-2);white-space:nowrap}
+  nav.tabs button[aria-selected="true"]{color:var(--brand);border-bottom-color:var(--brand)}
+  nav.tabs .count{font-family:var(--mono);font-size:11px;color:var(--ink-3);margin-left:4px}
+  .panel{display:none}.panel.on{display:block}
+
+  /* ---- camera ---- */
+  .camstage{position:relative;background:#0B1219;border-radius:12px;overflow:hidden;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center}
+  #video{width:100%;height:100%;object-fit:cover;display:none}
+  .camstage.live #video{display:block}
+  .camstage.live #camIdle{display:none}
+  #camIdle{color:#8FA0AF;text-align:center;padding:22px;font-size:14px;max-width:32ch}
+  #camIdle b{display:block;color:#E4EAEF;font-size:16px;margin-bottom:6px}
+  .frame{position:absolute;left:8%;right:8%;top:34%;height:32%;border:2px solid rgba(255,255,255,.9);border-radius:8px;box-shadow:0 0 0 2000px rgba(0,0,0,.28);pointer-events:none;display:none}
+  .camstage.live .frame{display:block}
+  .frame::after{content:"";position:absolute;left:6px;right:6px;top:50%;height:2px;background:#FF5252;opacity:.85}
+  .camtools{position:absolute;left:0;right:0;bottom:0;padding:8px;display:none;gap:8px;align-items:center;background:linear-gradient(transparent,rgba(0,0,0,.55))}
+  .camstage.live .camtools{display:flex}
+  .camtools button{background:rgba(255,255,255,.92);border:0;border-radius:999px;padding:7px 13px;font-weight:700;font-size:13px;cursor:pointer}
+  #zoom{flex:1;accent-color:#fff}
+  .banner{position:absolute;left:0;right:0;top:0;padding:9px 12px;font-weight:800;font-size:15px;color:#fff;display:none;align-items:baseline;gap:8px}
+  .banner.show{display:flex}
+  .banner .bn{font-family:var(--mono);font-size:13px;opacity:.9}
+  .banner[data-s="ok"]{background:var(--ok)} .banner[data-s="dup"]{background:var(--warn)} .banner[data-s="bad"]{background:var(--bad)}
+
+  .bigbtn{width:100%;padding:15px;border:0;border-radius:12px;background:var(--brand);color:#fff;font-size:16px;font-weight:800;cursor:pointer;margin-top:10px}
+  .bigbtn.stop{background:var(--ink)}
+  .bigbtn:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+
+  /* ---- readout ---- */
+  .readout{position:relative;background:var(--surface);border:1px solid var(--rule);border-radius:12px;padding:15px 16px 15px 30px;overflow:hidden;margin-top:12px}
+  .readout::before{content:"";position:absolute;left:0;top:0;bottom:0;width:16px;background:var(--bar);opacity:.16}
+  .readout[data-state="ok"]{background:var(--ok-tint);border-color:#9CCFB6}
+  .readout[data-state="dup"]{background:var(--warn-tint);border-color:#E0BE7C}
+  .readout[data-state="bad"]{background:var(--bad-tint);border-color:#E2A3A7}
+  .r-flag{position:absolute;top:12px;right:13px;font-size:10px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;padding:4px 9px;border-radius:999px;background:var(--ink);color:#fff}
+  .readout[data-state="ok"] .r-flag{background:var(--ok)}
+  .readout[data-state="dup"] .r-flag{background:var(--warn)}
+  .readout[data-state="bad"] .r-flag{background:var(--bad)}
+  .readout[data-state="idle"] .r-flag{display:none}
+  .r-roll{font-family:var(--mono);font-size:clamp(24px,6.5vw,34px);font-weight:700;line-height:1.05;word-break:break-all}
+  .r-name{font-size:clamp(16px,4vw,19px);font-weight:700;margin-top:3px;letter-spacing:-.01em}
+  .r-meta{margin-top:9px;display:flex;gap:6px 20px;flex-wrap:wrap;font-size:13px}
+  .r-meta i{font-style:normal;color:var(--ink-3);font-size:9.5px;text-transform:uppercase;letter-spacing:.08em;font-weight:800;display:block}
+  .r-meta b{font-weight:600}.r-meta .m{font-family:var(--mono)}
+  .r-idle{color:var(--ink-3);font-size:14px}
+  @media (prefers-reduced-motion: no-preference){
+    .readout.pulse{animation:pp .34s ease-out}@keyframes pp{0%{transform:scale(.986);opacity:.7}100%{transform:scale(1);opacity:1}}
+  }
+
+  /* ---- type-ahead ---- */
+  .typeahead{margin-top:12px;position:relative}
+  .typeahead input{width:100%;font-family:var(--mono);font-size:19px;font-weight:700;padding:13px 46px 13px 14px;border:2px solid var(--ink);border-radius:11px;text-transform:uppercase;background:var(--surface)}
+  .typeahead input::placeholder{font-family:var(--sans);font-weight:500;font-size:15px;text-transform:none;color:#AAB6C0}
+  .typeahead input:focus{outline:3px solid var(--brand);outline-offset:1px}
+  .clearx{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:0;background:var(--rule-2);color:var(--ink-2);width:30px;height:30px;border-radius:50%;font-size:17px;font-weight:800;cursor:pointer;display:none;line-height:1}
+  .typeahead.has .clearx{display:block}
+  .sugg{margin-top:8px;border:1px solid var(--rule);border-radius:11px;overflow:hidden;background:var(--surface);display:none}
+  .sugg.on{display:block}
+  .sugghead{padding:6px 12px;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);background:#F5F8FA;border-bottom:1px solid var(--rule)}
+
+  .stu{display:flex;align-items:center;gap:10px;padding:9px 11px;border-bottom:1px solid var(--rule-2)}
+  .stu:last-child{border-bottom:0}
+  .stu .who{flex:1;min-width:0}
+  .stu .rn{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--ink-2)}
+  .stu .rn mark{background:#FFE9A8;color:var(--ink);padding:0 1px;border-radius:2px}
+  .stu .nm{font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .stu .pr{font-size:11px;color:var(--ink-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .stu .mk{border:1px solid var(--rule);background:var(--surface);border-radius:999px;padding:7px 14px;font-size:12px;font-weight:800;cursor:pointer;flex:none}
+  .stu.is-p .mk{background:var(--ok);border-color:var(--ok);color:#fff}
+  .stu.is-p{background:var(--ok-tint)}
+
+  .chips{display:flex;gap:6px;overflow-x:auto;margin-bottom:10px;-webkit-overflow-scrolling:touch;padding-bottom:2px}
+  .chips button{flex:none;border:1px solid var(--rule);background:var(--surface);border-radius:999px;padding:6px 13px;font-size:12.5px;font-weight:700;cursor:pointer;color:var(--ink-2);white-space:nowrap}
+  .chips button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+  .chipmini{display:inline-block;font-family:var(--mono);font-size:10px;font-weight:800;background:var(--brand-tint);color:var(--brand);border-radius:4px;padding:1px 5px;margin-right:3px}
+  .hint{font-size:12px;color:var(--ink-3);margin-top:8px}
+  h2.sec{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-3);margin:22px 0 9px;font-weight:800;display:flex;align-items:center;gap:9px}
+  h2.sec::after{content:"";flex:1;height:1px;background:var(--rule)}
+  .card{background:var(--surface);border:1px solid var(--rule);border-radius:10px;overflow:hidden}
+  table{width:100%;border-collapse:collapse}
+  th{text-align:left;font-size:9.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3);padding:8px 11px;border-bottom:1px solid var(--rule);font-weight:800;background:#F5F8FA}
+  td{padding:8px 11px;border-bottom:1px solid var(--rule-2);vertical-align:middle;font-size:13.5px}
+  tr:last-child td{border-bottom:0}
+  td.roll,td.time,td.ph{font-family:var(--mono);font-size:12.5px}
+  td.roll{font-weight:700;white-space:nowrap}
+  .empty{padding:24px 14px;text-align:center;color:var(--ink-3);font-size:14px}
+  .empty b{display:block;color:var(--ink-2);font-size:15px;margin-bottom:3px}
+
+  button.btn{border:1px solid var(--rule);background:var(--surface);border-radius:8px;padding:9px 13px;font-weight:700;font-size:13.5px;cursor:pointer;color:var(--ink)}
+  button.btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+  button.btn.danger{color:var(--bad);border-color:#E2A3A7}
+  button.btn.sm{padding:5px 9px;font-size:12px}
+  button.btn:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+  .btnrow{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}
+
+  .search{width:100%;padding:11px 13px;border:1px solid var(--rule);border-radius:9px;font-size:15px;background:var(--surface);margin-bottom:10px}
+  .search:focus{outline:2px solid var(--brand);outline-offset:1px}
+
+  .proctor-head{display:flex;align-items:baseline;gap:9px;padding:9px 11px;background:#F5F8FA;border-bottom:1px solid var(--rule);flex-wrap:wrap}
+  .proctor-head strong{font-size:14px}
+  .proctor-head em{font-style:normal;font-family:var(--mono);font-size:12px;color:var(--bad);font-weight:700}
+  .proctor-head button{margin-left:auto}
+  .proctor{margin-bottom:12px}
+  .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:999px;font-size:13.5px;font-weight:700;z-index:99;box-shadow:0 6px 20px rgba(22,32,43,.3);max-width:88vw;text-align:center}
+</style>
+
+<header class="top">
+  <div class="barstrip"></div>
+  <div class="topinner">
+    <div class="brandmark">
+      <h1>Batch-1 Attendance</h1>
+      <span>QSpiders · AIML · BB-411</span>
+    </div>
+    <div class="tally">
+      <div class="n-p"><b id="tPresent">0</b><small>Present</small></div>
+      <div class="n-a"><b id="tAbsent">93</b><small>Absent</small></div>
+      <div><b id="tTotal">93</b><small>Total</small></div>
+    </div>
+  </div>
+</header>
+
+<div class="session"><div class="sinner">
+  <input type="date" id="sDate">
+  <span class="locked" id="lockNote"></span>
+  <div class="slot">
+    <button id="btnAM" aria-pressed="true">Morning</button>
+    <button id="btnPM" aria-pressed="false">Afternoon</button>
+  </div>
+</div></div>
+
+<div class="wrap">
+  <nav class="tabs" role="tablist">
+    <button role="tab" aria-selected="true"  data-panel="p-scan">Scan</button>
+    <button role="tab" aria-selected="false" data-panel="p-list">Students <span class="count">93</span></button>
+    <button role="tab" aria-selected="false" data-panel="p-abs">Absentees <span class="count" id="cAbs">93</span></button>
+    <button role="tab" aria-selected="false" data-panel="p-rep">Reports</button>
+  </nav>
+
+  <!-- ============ SCAN ============ -->
+  <section class="panel on" id="p-scan" role="tabpanel">
+    <div class="camstage" id="camStage">
+      <video id="video" playsinline muted></video>
+      <div class="frame"></div>
+      <div id="camIdle"><b>Camera off</b>Tap Start camera, then hold a student's ID barcode inside the red line.</div>
+      <div class="banner" id="banner" data-s="ok"><span id="bnName">—</span><span class="bn" id="bnRoll"></span></div>
+      <div class="camtools">
+        <button id="btnTorch" type="button" hidden>Light</button>
+        <input type="range" id="zoom" min="1" max="5" step="0.1" value="1" hidden aria-label="Zoom">
+      </div>
+    </div>
+    <button class="bigbtn" id="btnCam">Start camera</button>
+
+    <div class="readout" id="readout" data-state="idle">
+      <span class="r-flag" id="rFlag">Present</span>
+      <div id="rIdle" class="r-idle">Every scan shows the student's name, roll number, mobile and proctor here.</div>
+      <div id="rBody" style="display:none">
+        <div class="r-roll" id="rRoll">—</div>
+        <div class="r-name" id="rName">—</div>
+        <div class="r-meta">
+          <div><i>Mobile</i><b class="m" id="rPhone">—</b></div>
+          <div><i>Proctor</i><b id="rProctor">—</b></div>
+          <div><i>Timetable</i><b id="rSection">—</b></div>
+          <div><i>Marked</i><b class="m" id="rTime">—</b></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="typeahead" id="ta">
+      <input id="quick" placeholder="No card? Type last 3 digits or name" autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="done">
+      <button class="clearx" id="btnClearQ" type="button" aria-label="Clear">×</button>
+    </div>
+    <div class="sugg" id="sugg"></div>
+    <div class="hint">Typing <b>017</b> finds 24B11AI017. Tap the student to mark them present.</div>
+
+    <h2 class="sec">Marked present <span style="font-family:var(--mono);color:var(--ink-3)" id="pCount"></span></h2>
+    <div class="card"><div id="presentList"></div></div>
+
+    <div class="btnrow">
+      <button class="btn" id="btnAllPresent">Mark all present</button>
+      <button class="btn danger" id="btnClear">Clear this session</button>
+    </div>
+  </section>
+
+  <!-- ============ STUDENTS ============ -->
+  <section class="panel" id="p-list" role="tabpanel">
+    <input class="search" id="search" placeholder="Search roll number, name, proctor or T3" autocomplete="off">
+    <div class="chips" id="chips"></div>
+    <div class="card"><div id="stuList"></div></div>
+  </section>
+
+  <!-- ============ ABSENTEES ============ -->
+  <section class="panel" id="p-abs" role="tabpanel">
+    <div class="sinner" style="padding:0;margin-bottom:10px;gap:6px">
+      <span style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)">Group by</span>
+      <div class="slot" style="margin-left:0">
+        <button id="gbProc" aria-pressed="true">Proctor</button>
+        <button id="gbSec" aria-pressed="false">Timetable</button>
+      </div>
+    </div>
+    <div class="btnrow">
+      <button class="btn primary" id="btnAbsCopy">Copy absentee report</button>
+      <button class="btn" id="btnAbsCsv">Download absentee CSV</button>
+    </div>
+    <div id="absList"></div>
+  </section>
+
+  <!-- ============ REPORTS ============ -->
+  <section class="panel" id="p-rep" role="tabpanel">
+    <div class="btnrow">
+      <button class="btn primary" id="btnDayCsv">Today: both sessions CSV</button>
+      <button class="btn" id="btnAllCsv">All days CSV</button>
+    </div>
+    <h2 class="sec">Day register</h2>
+    <div class="card"><div id="repList"></div></div>
+    <h2 class="sec">Timetable strength</h2>
+    <div class="card"><div id="secList"></div></div>
+    <h2 class="sec">Proctor strength</h2>
+    <div class="card"><div id="procList"></div></div>
+  </section>
+</div>
+
+<script>
+/* =========================================================
+   Roster — QSpiders Batch-1 (BB-411), proctors from the
+   2026-27 V Sem AIML proctoring list
+   ========================================================= */
+const PROCS = ["M.Pravallika", "Khasimbee Shaik", "V.Appalakonda", "K.Sowjanya", "D Satyanarayana", "Dr. Kishorekumar Paleti", "K.N. S. L. Kumar", "P.V.V.S.D.Nagendrudu", "Dr. Mangalapalli Vamsikrishna", "P. Annapurna", "Ch D V P Kumari", "Dr.V.Ravi teja", "Sunkavilli Vijaya Nirmala", "Dr.N.Rambabu", "Dr.V.Venkata Kumar", "Showri Rayalu Bandanadam", "Dr.N.Rajesh", "Rayavarapu Sri Divya"];
+const SECS  = ["T1 (NS)", "T2 (MAD)", "T3 (CA1)", "T4 (CA2)", "T6 (CA3)"];
+const RAW = `24B11AI017|ARAVA DEEVENA|9390121705|0|2
+24B11AI037|BETA ANUSHKA|7396247154|0|3
+24B11AI039|BHIMARAJU SAI SRI AKHIL|9030025604|1|3
+24B11AI050|BUSI AISWARYA|9491577874|2|1
+24B11AI052|BUTTA DEEKSHITHA|8688100347|0|2
+24B11AI061|CHELLABOYINA DINESH ANAND|9603045231|2|1
+24B11AI063|CHIMALA JYOTHIKA|8522087579|0|2
+24B11AI064|CHINNAM HARIKA|9618385723|2|1
+24B11AI096|DULI SHAKEENA BHANU|8919679145|0|3
+24B11AI111|GAMINI LASYA PRIYA|9936512365|3|3
+24B11AI115|GANGULAKURTHI VENKATA SRI RAGHAVENDRA|9398660664|4|3
+24B11AI121|GUNDUBOYINA MANASWINI|9704318195|3|3
+24B11AI122|GEDDAM BHARATH KUMAR|9553413220|5|1
+24B11AI123|GINNE NAVEENA|9492749867|6|2
+24B11AI128|GOWROJU BALA MARUTHI KANAKA SOMA SANTHOSH|9381574476|5|1
+24B11AI130|GUBBALA PRASANNA LAKSHMI|8187055467|7|4
+24B11AI138|GUTHI NAGA SRI HARSHITHA|9966285885|4|2
+24B11AI150|KADALI DHANALAKSHMI SAILAJA|8074315943|5|1
+24B11AI153|KADUPU GIRI DURGA PRASAD|7386320656|3|4
+24B11AI158|KAKARLA SRI SATYA HARI VEERABHADRA|9441058188|8|2
+24B11AI162|KANDADAI SRIVALLIKA|9885435276|3|3
+24B11AI164|KANDULA MANIKANTA|7989291520|4|2
+24B11AI178|KATE TEJASWI|7674994471|5|1
+24B11AI179|KATURI BHAVITHA|7337320992|5|1
+24B11AI186|KOKKU POOJITH RAM VENKAT|9700744475|3|3
+24B11AI191|KOMBATTULA SUVARNA|9701402949|5|1
+24B11AI202|KOTIKALAPUDI VENKATA PALLAVI RIPITHA|9515231934|7|4
+24B11AI225|MADDIPATI UMA DEVI|9491374987|5|1
+24B11AI239|MAMIDI AMRUTHAVALLI SUPRIYA|7382199127|9|2
+24B11AI254|MEDANKI AMANITHA|9492286588|7|4
+24B11AI261|MOHAMMAD YASMEEN|8332878599|10|0
+24B11AI267|MUDIDUDDI HARSHA KUMAR|9959842279|11|3
+24B11AI276|MUNGARA PADMAVATHI|8143586277|9|2
+24B11AI281|NADIMPILLI SHANMUKHA SIMHADRI DEVI|9666783364|9|2
+24B11AI283|ANEPU YAKSHASRI|7989320986|12|2
+24B11AI294|NAYUDU KAVYA PRIYA|9032870860|3|3
+24B11AI314|PADALA VIKRAM KUMAR REDDY|8978852444|7|3
+24B11AI327|PARIMI VARSHITHA DEVI|9888317772|9|2
+24B11AI330|PEDAMALLU RAMA NAGA VEERA SAI RISHITHA|9492351342|5|1
+24B11AI338|PENKE ANAND RAJESH|6304702896|9|2
+24B11AI339|PENTAPATI ANJALI|9032525496|10|0
+24B11AI342|PETTA SHAMINI|9866227868|11|4
+24B11AI350|PODILI S V N R L MANIKANTA|7386346523|10|0
+24B11AI362|RANJITA|9474211902|11|4
+24B11AI365|REDDY PRANATHI RAMYA|9494705296|13|2
+24B11AI366|REDDY SAI VENKATA NAVADEEP SARVAN|8121679145|7|3
+24B11AI368|REPURI V V S S K MAHA LAKSHMI|9618797874|7|3
+24B11AI370|RISHIVARDHAN T|9959764414|13|3
+24B11AI374|SAJIPALLI PURUSHOTHAMA NAGA SIDDARDHA|9885837097|13|2
+24B11AI380|SAMANTHAKURTHI DEVI SOWMYA|9014842001|13|4
+24B11AI385|SATHI BHAVYA MANI|9849693666|7|4
+24B11AI386|SATHI ISWARYA|9866415777|14|4
+24B11AI394|SHAIK HASAN|7842205787|13|3
+24B11AI398|SIDDHANA DIVYA PRIYANKA|8751909999|13|2
+24B11AI405|SRIYANI SINGH|6265700220|13|4
+24B11AI408|SUNKAVILLI LASYA|8919230528|4|2
+24B11AI413|TALARI PAVAN KUMAR|9494813025|1|1
+24B11AI415|TANVI JAIN|8885810101|13|4
+24B11AI422|TIYYAGURA NANDEESWARA REDDY|8247341025|13|2
+24B11AI436|KOTHANURU HARISH|7032034708|13|2
+24B11AI442|VALAVALA KAMAL NARAYANA KARTHIK|7675990755|15|4
+24B11AI448|VARREY NANDA KAILASH|9912168656|1|1
+24B11AI449|USURUPATI KAMALNATH|7013268946|10|0
+24B11AI457|VITHANALA NAGA KARTHIK RAMACHANDRA|8008085756|15|3
+24B11AI460|YAJJALA HEMADRI VENKAT TEJ|9704566741|15|2
+24B11AI465|YAMALA DEVI SRI PRASAD|7981435088|1|1
+24B11AI469|YARLAGADDA MEGHANA DEVI|8125039434|1|1
+24B11AI480|TALIYAKULA TEJA SWAROOP|7382346388|15|2
+25B21AI003|NALLAMILLI SUBHASH|9963823774|15|2
+25B21AI009|PALIKA SUMANTH|9398778272|15|2
+25B21AI011|YALLA SAI GANESH|9000210363|16|2
+25B21AI015|KANURI SAI YASASWINI|9391156227|2|0
+25B21AI016|SAILA RAJA ADITYA GIRISH|9615789888|14|3
+25B21AI017|PAMPANA VANDANA DEVI|9849982278|2|0
+25B21AI020|POTLURI GAYATHRI|9014664093|2|0
+25B21AI021|SATTI SITA RAMASWAMY|9553374757|14|3
+25B21AI027|KADARI HEMA SURYAVATHI|7416477577|2|0
+25B21AI028|PADALA HARIKA MAHESWARI|9347248261|2|0
+25B21AI030|SUNKIREDDY GREESHWANTH REDDY|9885254024|16|3
+25B21AI032|CHIKKAM SUNEETHA|9542495247|2|0
+25B21AI034|LANKA DEEPAK PAL|7993370090|2|0
+25B21AI037|KAKI RAMA SURYA CHARAN|7842947752|16|2
+25B21AI038|KARRI SUHASINI|8790135668|16|3
+25B21AI040|BANALA MAHESWARI|6305598879|2|0
+25B21AI041|KOMMARAJU SHANMUKHA PRIYA|9849541424|16|3
+25B21AI042|VADAMODALA SIRIL HARSHITH|9182872101|16|2
+25B21AI043|PULAGAM NITHIN SRI HARI REDDY|9701023889|16|2
+25B21AI048|MURAMALLA SATYA VEERA DURGA|6309721166|16|3
+25B21AI049|GADUDHULA NARASIMHA PRUDHVI RAJ|6303563320|1|1
+25B21AI050|MADDURI SRI LAKSHMI SARANYA|6309072927|16|3
+25B21AI054|AATLA PAVANI|6301050575|16|3
+25B21AI061|BIRUDA PURNIMA PAVANI GANGA|7989927221|17|3
+25B61AI001|MYNAMPUDI SRI UDAYA CHANDRIKA|9346466548|17|3`;
+const ROSTER = RAW.split('\n').map(l => {
+  const [roll, name, phone, p, t] = l.split('|');
+  return {roll, name, phone, proctor: PROCS[+p], section: SECS[+t], code: SECS[+t].split(' ')[0],
+          key: (roll + ' ' + name).toUpperCase().replace(/[^A-Z0-9 ]/g,'')};
+});
+const BY_ROLL = {};
+ROSTER.forEach(s => BY_ROLL[s.roll] = s);
+
+/* =========================================================
+   Storage
+   ========================================================= */
+const mem = {};
+const store = {
+  async get(k, fb){
+    try{
+      if (window.storage && window.storage.get){ const r = await window.storage.get(k); return r && r.value ? JSON.parse(r.value) : fb; }
+      if (window.localStorage){ const v = localStorage.getItem(k); return v ? JSON.parse(v) : fb; }
+    }catch(e){}
+    return (k in mem) ? mem[k] : fb;
+  },
+  async set(k, v){
+    mem[k] = v;
+    try{
+      if (window.storage && window.storage.set){ await window.storage.set(k, JSON.stringify(v)); return; }
+      if (window.localStorage){ localStorage.setItem(k, JSON.stringify(v)); }
+    }catch(e){ console.error('save failed', e); }
+  }
+};
+const K_REC = 'b1:records';
+
+/* =========================================================
+   State
+   ========================================================= */
+let records = {};      // "2026-08-23|AM" -> { ROLL: "09:14" }
+let day = '', slot = 'AM';
+let secFilter = '';    // '' = all timetable groups
+let groupBy = 'proctor';
+const $ = id => document.getElementById(id);
+const key = () => day + '|' + slot;
+const cur = () => (records[key()] ||= {});
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const norm = s => String(s == null ? '' : s).toUpperCase().replace(/[^A-Z0-9]/g, '');
+const hhmm = d => d.toTimeString().slice(0,5);
+
+/* Barcode may carry a prefix/suffix — exact match first, then unique partial */
+function findStudent(raw){
+  const n = norm(raw);
+  if (!n) return null;
+  if (BY_ROLL[n]) return BY_ROLL[n];
+  const near = ROSTER.filter(s => n.endsWith(s.roll) || s.roll.endsWith(n) || n.includes(s.roll));
+  return near.length === 1 ? near[0] : null;
+}
+/* Type-ahead: last-3-digits, any roll fragment, or name words */
+function search(q){
+  const n = norm(q);
+  if (!n) return [];
+  if (/^\d{1,4}$/.test(n)){
+    const tail = ROSTER.filter(s => s.roll.slice(-3) === n.padStart(3,'0') || s.roll.endsWith(n));
+    if (tail.length) return tail;
+  }
+  const words = q.toUpperCase().replace(/[^A-Z0-9 ]/g,'').split(/\s+/).filter(Boolean);
+  return ROSTER.filter(s => words.every(w => s.key.includes(w)));
+}
+
+/* =========================================================
+   Feedback
+   ========================================================= */
+let ac = null;
+function beep(kind){
+  try{
+    ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+    if (ac.state === 'suspended') ac.resume();
+    const o = ac.createOscillator(), g = ac.createGain();
+    o.type = 'sine';
+    o.frequency.value = kind === 'ok' ? 1180 : kind === 'dup' ? 660 : 300;
+    g.gain.setValueAtTime(.0001, ac.currentTime);
+    g.gain.exponentialRampToValueAtTime(.17, ac.currentTime + .012);
+    g.gain.exponentialRampToValueAtTime(.0001, ac.currentTime + (kind === 'bad' ? .34 : .13));
+    o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime + .36);
+  }catch(e){}
+  try{ navigator.vibrate && navigator.vibrate(kind === 'ok' ? 35 : [40,60,40]); }catch(e){}
+}
+let toastT;
+function toast(msg){
+  clearTimeout(toastT);
+  let t = document.querySelector('.toast');
+  if (!t){ t = document.createElement('div'); t.className = 'toast'; document.body.appendChild(t); }
+  t.textContent = msg;
+  toastT = setTimeout(() => t.remove(), 2200);
+}
+let bannerT;
+function banner(state, name, roll){
+  const b = $('banner');
+  b.dataset.s = state; $('bnName').textContent = name; $('bnRoll').textContent = roll || '';
+  b.classList.add('show');
+  clearTimeout(bannerT);
+  bannerT = setTimeout(() => b.classList.remove('show'), 2400);
+}
+
+/* =========================================================
+   Marking
+   ========================================================= */
+function mark(raw){
+  const st = (raw && raw.roll) ? raw : findStudent(raw);
+  if (!st){
+    readout('bad', {roll: String(raw).trim().toUpperCase(), name: 'Not in Batch-1', proctor: '—', section: '—'}, 'Unknown');
+    banner('bad', 'Not in Batch-1', String(raw).trim());
+    beep('bad'); return;
+  }
+  const rec = cur();
+  if (rec[st.roll]){
+    readout('dup', st, 'Already marked', rec[st.roll]);
+    banner('dup', st.name, st.roll);
+    beep('dup'); return;
+  }
+  rec[st.roll] = hhmm(new Date());
+  readout('ok', st, 'Present', rec[st.roll]);
+  banner('ok', st.name, st.roll);
+  beep('ok'); save(); renderAll();
+}
+function unmark(roll){ delete cur()[roll]; save(); renderAll(); toast(roll + ' moved to absent'); }
+function readout(state, st, flag, at){
+  const r = $('readout');
+  r.dataset.state = state;
+  $('rIdle').style.display = 'none'; $('rBody').style.display = 'block';
+  $('rFlag').textContent = flag;
+  $('rRoll').textContent = st.roll;
+  $('rName').textContent = st.name;
+  $('rPhone').textContent = st.phone || '—';
+  $('rProctor').textContent = st.proctor || '—';
+  $('rSection').textContent = st.section || '—';
+  $('rTime').textContent = at || hhmm(new Date());
+  r.classList.remove('pulse'); void r.offsetWidth; r.classList.add('pulse');
+}
+let saveT;
+function save(){ clearTimeout(saveT); saveT = setTimeout(() => store.set(K_REC, records), 400); }
+
+/* =========================================================
+   Camera
+   ========================================================= */
+let stream = null, track = null, detector = null, rafId = 0, camLive = false, h5 = null, lastHit = {code:'', t:0};
+const WANT = ['code_128','code_39','code_93','codabar','ean_13','ean_8','itf','upc_a','qr_code'];
+function loadScript(src){
+  return new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = rej; document.head.appendChild(s); });
+}
+function accept(text){
+  const now = Date.now();
+  if (text === lastHit.code && now - lastHit.t < 2000) return;
+  lastHit = {code: text, t: now};
+  mark(text);
+}
+async function startCam(){
+  if (camLive) return;
+  $('btnCam').textContent = 'Starting…';
+  try{
+    if ('BarcodeDetector' in window){
+      const ok = await window.BarcodeDetector.getSupportedFormats();
+      const fmts = WANT.filter(f => ok.includes(f));
+      if (fmts.length){
+        detector = new window.BarcodeDetector({formats: fmts});
+        stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}, width:{ideal:1920}, height:{ideal:1080}}});
+        const v = $('video'); v.srcObject = stream; await v.play();
+        track = stream.getVideoTracks()[0];
+        setupTools(); camLive = true; live(true); detectLoop();
+        $('btnCam').textContent = 'Stop camera'; $('btnCam').classList.add('stop');
+        return;
+      }
+    }
+    await startFallback();
+  }catch(e){
+    console.error(e);
+    live(false); $('btnCam').textContent = 'Start camera'; $('btnCam').classList.remove('stop');
+    toast('Camera blocked — allow camera access, or type the roll number');
+  }
+}
+async function startFallback(){
+  if (!window.Html5Qrcode) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js');
+  const F = window.Html5QrcodeSupportedFormats;
+  $('video').style.display = 'none';
+  let host = document.getElementById('h5host');
+  if (!host){ host = document.createElement('div'); host.id = 'h5host'; host.style.cssText = 'width:100%;height:100%'; $('camStage').prepend(host); }
+  h5 = new window.Html5Qrcode('h5host', {
+    formatsToSupport: [F.CODE_128, F.CODE_39, F.CODE_93, F.CODABAR, F.EAN_13, F.ITF, F.QR_CODE], verbose: false
+  });
+  await h5.start({facingMode:'environment'}, {fps:12, qrbox:{width:300, height:150}}, txt => accept(txt), () => {});
+  camLive = true; live(true);
+  $('btnCam').textContent = 'Stop camera'; $('btnCam').classList.add('stop');
+}
+async function detectLoop(){
+  if (!camLive || !detector) return;
+  const v = $('video');
+  try{
+    if (v.readyState >= 2){
+      const hits = await detector.detect(v);
+      if (hits && hits.length) accept(hits[0].rawValue);
+    }
+  }catch(e){}
+  rafId = requestAnimationFrame(detectLoop);
+}
+function setupTools(){
+  const caps = track.getCapabilities ? track.getCapabilities() : {};
+  if (caps.torch){
+    const b = $('btnTorch'); b.hidden = false; let on = false;
+    b.onclick = async () => { on = !on; try{ await track.applyConstraints({advanced:[{torch:on}]}); b.textContent = on ? 'Light off' : 'Light'; }catch(e){} };
+  }
+  if (caps.zoom){
+    const z = $('zoom'); z.hidden = false;
+    z.min = caps.zoom.min; z.max = Math.min(caps.zoom.max, caps.zoom.min + 4); z.step = caps.zoom.step || .1; z.value = caps.zoom.min;
+    z.oninput = () => { try{ track.applyConstraints({advanced:[{zoom:+z.value}]}); }catch(e){} };
+  }
+}
+async function stopCam(){
+  camLive = false; cancelAnimationFrame(rafId);
+  try{ if (h5){ await h5.stop(); await h5.clear(); h5 = null; } }catch(e){}
+  if (stream){ stream.getTracks().forEach(t => t.stop()); stream = null; track = null; }
+  $('video').srcObject = null; $('video').style.display = '';
+  $('btnTorch').hidden = true; $('zoom').hidden = true;
+  live(false);
+  $('btnCam').textContent = 'Start camera'; $('btnCam').classList.remove('stop');
+}
+function live(on){ $('camStage').classList.toggle('live', on); }
+document.addEventListener('visibilitychange', () => { if (document.hidden && camLive) stopCam(); });
+
+/* =========================================================
+   Rendering
+   ========================================================= */
+function absentees(){ const rec = cur(); return ROSTER.filter(s => !rec[s.roll]); }
+function renderAll(){ renderTally(); renderPresent(); renderChips(); renderStudents(); renderAbsent(); renderReport(); renderSugg(); }
+
+function renderTally(){
+  const p = Object.keys(cur()).length;
+  $('tPresent').textContent = p;
+  $('tAbsent').textContent = ROSTER.length - p;
+  $('tTotal').textContent = ROSTER.length;
+  $('cAbs').textContent = ROSTER.length - p;
+  $('pCount').textContent = p + ' / ' + ROSTER.length;
+}
+function stuRow(s, hl){
+  const on = !!cur()[s.roll];
+  let roll = esc(s.roll);
+  if (hl){ const i = roll.toUpperCase().lastIndexOf(hl); if (i > -1) roll = roll.slice(0,i) + '<mark>' + roll.slice(i, i+hl.length) + '</mark>' + roll.slice(i+hl.length); }
+  return '<div class="stu' + (on ? ' is-p' : '') + '"><div class="who"><div class="rn">' + roll +
+    (on ? ' · ' + cur()[s.roll] : '') + '</div><div class="nm">' + esc(s.name) +
+    '</div><div class="pr"><span class="chipmini">' + esc(s.code) + '</span> ' + esc(s.proctor) + '</div></div>' +
+    '<button class="mk" data-t="' + esc(s.roll) + '">' + (on ? 'Present' : 'Absent') + '</button></div>';
+}
+function wireRows(box){
+  box.querySelectorAll('[data-t]').forEach(b => b.onclick = () => {
+    const r = b.dataset.t;
+    if (cur()[r]) unmark(r); else mark(BY_ROLL[r]);
+  });
+}
+function renderSugg(){
+  const q = $('quick').value.trim(), box = $('sugg');
+  $('ta').classList.toggle('has', !!q);
+  if (!q){ box.classList.remove('on'); box.innerHTML = ''; return; }
+  const hits = search(q);
+  box.classList.add('on');
+  if (!hits.length){ box.innerHTML = '<div class="empty"><b>No match in Batch-1</b>Check the digits, or try part of the name.</div>'; return; }
+  const hl = /^\d{1,4}$/.test(norm(q)) ? norm(q) : '';
+  box.innerHTML = '<div class="sugghead">' + hits.length + (hits.length === 1 ? ' match' : ' matches') + '</div>' +
+                  hits.slice(0,8).map(s => stuRow(s, hl)).join('');
+  wireRows(box);
+}
+function renderPresent(){
+  const rec = cur();
+  const rows = ROSTER.filter(s => rec[s.roll]).sort((a,b) => rec[b.roll].localeCompare(rec[a.roll]));
+  const box = $('presentList');
+  if (!rows.length){ box.innerHTML = '<div class="empty"><b>Nobody marked yet</b>The first scan appears here.</div>'; return; }
+  let h = '<table><thead><tr><th>Roll</th><th>Name</th><th>Time</th><th></th></tr></thead><tbody>';
+  rows.forEach(s => {
+    h += '<tr><td class="roll">' + esc(s.roll) + '</td><td>' + esc(s.name) + '</td><td class="time">' + rec[s.roll] +
+         '</td><td style="text-align:right"><button class="btn sm" data-un="' + esc(s.roll) + '">Undo</button></td></tr>';
+  });
+  box.innerHTML = h + '</tbody></table>';
+  box.querySelectorAll('[data-un]').forEach(b => b.onclick = () => unmark(b.dataset.un));
+}
+function renderChips(){
+  const rec = cur();
+  const items = [['', 'All 93']].concat(SECS.map(t => [t, t]));
+  $('chips').innerHTML = items.map(([v, label]) => {
+    const pool = v ? ROSTER.filter(s => s.section === v) : ROSTER;
+    const p = pool.filter(s => rec[s.roll]).length;
+    return '<button data-sf="' + esc(v) + '" aria-pressed="' + (secFilter === v) + '">' +
+           esc(label) + ' · ' + p + '/' + pool.length + '</button>';
+  }).join('');
+  $('chips').querySelectorAll('[data-sf]').forEach(b => b.onclick = () => { secFilter = b.dataset.sf; renderStudents(); renderChips(); });
+}
+function renderStudents(){
+  const q = $('search').value.trim(), box = $('stuList');
+  let list = secFilter ? ROSTER.filter(s => s.section === secFilter) : ROSTER;
+  if (q){
+    const n = norm(q), w = q.toUpperCase().replace(/[^A-Z0-9 ]/g,'').split(/\s+/).filter(Boolean);
+    list = list.filter(s => s.roll.includes(n) || w.every(x => s.key.includes(x)) ||
+                            norm(s.proctor).includes(n) || norm(s.section).includes(n));
+  }
+  if (!list.length){ box.innerHTML = '<div class="empty"><b>No match</b>Try part of the name or the last three digits.</div>'; return; }
+  box.innerHTML = list.map(s => stuRow(s, '')).join('');
+  wireRows(box);
+}
+function renderAbsent(){
+  const abs = absentees(), box = $('absList');
+  if (!abs.length){ box.innerHTML = '<div class="card"><div class="empty"><b>Full attendance</b>All 93 students are marked present.</div></div>'; return; }
+  const groups = {};
+  abs.forEach(s => { (groups[groupBy === 'proctor' ? s.proctor : s.section] ||= []).push(s); });
+  const names = Object.keys(groups).sort();
+  box.innerHTML = names.map((pr, i) =>
+    '<div class="proctor card"><div class="proctor-head"><strong>' + esc(pr) + '</strong><em>' + groups[pr].length +
+    ' absent</em><button class="btn sm" data-cp="' + i + '">Copy</button></div><table><tbody>' +
+    groups[pr].map(s => '<tr><td class="roll" style="width:33%">' + esc(s.roll) + '</td><td>' + esc(s.name) +
+      '</td><td class="ph" style="width:28%">' + esc(s.phone) + '</td></tr>').join('') +
+    '</tbody></table></div>').join('');
+  box.querySelectorAll('[data-cp]').forEach(b => b.onclick = () => {
+    const pr = names[+b.dataset.cp];
+    copy(head() + '\n' + (groupBy === 'proctor' ? 'Proctor: ' : 'Timetable: ') + pr +
+         '\nAbsent (' + groups[pr].length + '):\n' +
+         groups[pr].map(s => s.roll + '  ' + s.name + '  ' + s.phone +
+           (groupBy === 'proctor' ? '  [' + s.code + ']' : '  ' + s.proctor)).join('\n'));
+  });
+}
+function head(){ return 'QSpiders Batch-1 (BB-411) · ' + day + ' · ' + (slot === 'AM' ? 'Morning' : 'Afternoon'); }
+function renderReport(){
+  const days = [...new Set(Object.keys(records).map(k => k.split('|')[0]))].sort().reverse();
+  const box = $('repList');
+  if (!days.length){ box.innerHTML = '<div class="empty"><b>Nothing recorded yet</b>Sessions appear here as you mark them.</div>'; }
+  else{
+    let h = '<table><thead><tr><th>Date</th><th>Morning</th><th>Afternoon</th><th></th></tr></thead><tbody>';
+    days.forEach(d => {
+      const am = Object.keys(records[d + '|AM'] || {}).length, pm = Object.keys(records[d + '|PM'] || {}).length;
+      h += '<tr><td class="time">' + d + '</td><td class="time">' + am + ' / 93</td><td class="time">' + pm +
+           ' / 93</td><td style="text-align:right"><button class="btn sm" data-d="' + d + '">CSV</button></td></tr>';
+    });
+    box.innerHTML = h + '</tbody></table>';
+    box.querySelectorAll('[data-d]').forEach(b => b.onclick = () => dayCsv(b.dataset.d));
+  }
+  const rec = cur();
+  const tbl = (field, label) => {
+    const g = {};
+    ROSTER.forEach(s => { (g[s[field]] ||= {t:0, p:0}); g[s[field]].t++; if (rec[s.roll]) g[s[field]].p++; });
+    return '<table><thead><tr><th>' + label + '</th><th>Present</th><th>Absent</th></tr></thead><tbody>' +
+      Object.keys(g).sort().map(k => '<tr><td>' + esc(k) + '</td><td class="time">' + g[k].p + ' / ' + g[k].t +
+        '</td><td class="time">' + (g[k].t - g[k].p) + '</td></tr>').join('') + '</tbody></table>';
+  };
+  $('secList').innerHTML = tbl('section', 'Timetable');
+  $('procList').innerHTML = tbl('proctor', 'Proctor');
+}
+
+/* =========================================================
+   Export
+   ========================================================= */
+function toCsv(rows){
+  const e = v => { v = String(v == null ? '' : v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g,'""') + '"' : v; };
+  return rows.map(r => r.map(e).join(',')).join('\n');
+}
+function download(name, text){
+  const b = new Blob([text], {type:'text/csv;charset=utf-8'}), u = URL.createObjectURL(b);
+  const a = document.createElement('a'); a.href = u; a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(u), 800);
+}
+const HDR = ['Date','Roll Number','Name','Mobile','Timetable','Proctor','Morning','Morning Time','Afternoon','Afternoon Time'];
+function dayRows(d){
+  const am = records[d + '|AM'] || {}, pm = records[d + '|PM'] || {};
+  return ROSTER.map(s => [d, s.roll, s.name, s.phone, s.section, s.proctor,
+    am[s.roll] ? 'Present' : 'Absent', am[s.roll] || '',
+    pm[s.roll] ? 'Present' : 'Absent', pm[s.roll] || '']);
+}
+function dayCsv(d){ download('attendance_batch1_' + d + '.csv', toCsv([HDR, ...dayRows(d)])); }
+function copy(text){
+  if (navigator.clipboard) navigator.clipboard.writeText(text).then(() => toast('Copied'), () => fb(text)); else fb(text);
+  function fb(t){
+    const a = document.createElement('textarea'); a.value = t; document.body.appendChild(a); a.select();
+    try{ document.execCommand('copy'); toast('Copied'); }catch(e){ toast('Copy failed'); }
+    a.remove();
+  }
+}
+
+/* =========================================================
+   Wiring
+   ========================================================= */
+document.querySelectorAll('nav.tabs button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('nav.tabs button').forEach(x => x.setAttribute('aria-selected', x === b));
+  document.querySelectorAll('.panel').forEach(p => p.classList.toggle('on', p.id === b.dataset.panel));
+});
+function setSlot(s){
+  slot = s;
+  $('btnAM').setAttribute('aria-pressed', s === 'AM');
+  $('btnPM').setAttribute('aria-pressed', s === 'PM');
+  $('readout').dataset.state = 'idle'; $('rIdle').style.display = 'block'; $('rBody').style.display = 'none';
+  renderAll();
+}
+$('btnAM').onclick = () => setSlot('AM');
+$('btnPM').onclick = () => setSlot('PM');
+$('sDate').onchange = () => { day = $('sDate').value; checkLock(); renderAll(); };
+function checkLock(){
+  const today = new Date().toISOString().slice(0,10);
+  $('lockNote').textContent = day === today ? '' : 'past date';
+}
+$('btnCam').onclick = () => camLive ? stopCam() : startCam();
+$('quick').addEventListener('input', renderSugg);
+$('quick').addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  e.preventDefault();
+  const hits = search($('quick').value.trim());
+  if (hits.length === 1){ mark(hits[0]); $('quick').value = ''; renderSugg(); $('quick').blur(); }
+  else if (!hits.length) toast('No match in Batch-1');
+  else toast(hits.length + ' matches — tap the right student');
+});
+$('btnClearQ').onclick = () => { $('quick').value = ''; renderSugg(); $('quick').focus(); };
+$('search').addEventListener('input', renderStudents);
+function setGroup(g){
+  groupBy = g;
+  $('gbProc').setAttribute('aria-pressed', g === 'proctor');
+  $('gbSec').setAttribute('aria-pressed', g === 'section');
+  renderAbsent();
+}
+$('gbProc').onclick = () => setGroup('proctor');
+$('gbSec').onclick = () => setGroup('section');
+$('btnAllPresent').onclick = () => {
+  if (!confirm('Mark all 93 students present for ' + (slot === 'AM' ? 'the morning' : 'the afternoon') + '? Then undo the few who are absent.')) return;
+  const at = hhmm(new Date()), rec = cur();
+  ROSTER.forEach(s => { if (!rec[s.roll]) rec[s.roll] = at; });
+  save(); renderAll();
+};
+$('btnClear').onclick = () => {
+  if (!confirm('Clear every mark in this session?')) return;
+  records[key()] = {}; save(); renderAll();
+  $('readout').dataset.state = 'idle'; $('rIdle').style.display = 'block'; $('rBody').style.display = 'none';
+};
+$('btnAbsCsv').onclick = () => {
+  const rows = [['Date','Session','Roll Number','Name','Mobile','Timetable','Proctor']];
+  absentees().forEach(s => rows.push([day, slot === 'AM' ? 'Morning' : 'Afternoon', s.roll, s.name, s.phone, s.section, s.proctor]));
+  download('absentees_batch1_' + day + '_' + slot + '.csv', toCsv(rows));
+};
+$('btnAbsCopy').onclick = () => {
+  const abs = absentees(), groups = {};
+  abs.forEach(s => { (groups[groupBy === 'proctor' ? s.proctor : s.section] ||= []).push(s); });
+  let out = head() + '\nPresent: ' + (93 - abs.length) + ' / 93\nAbsent: ' + abs.length + '\n';
+  Object.keys(groups).sort().forEach(pr => {
+    out += '\n' + pr + ' (' + groups[pr].length + ')\n' +
+      groups[pr].map(s => '  ' + s.roll + '  ' + s.name + '  ' + s.phone +
+        (groupBy === 'proctor' ? '  [' + s.code + ']' : '  ' + s.proctor)).join('\n') + '\n';
+  });
+  copy(out);
+};
+$('btnDayCsv').onclick = () => dayCsv(day);
+$('btnAllCsv').onclick = () => {
+  const days = [...new Set(Object.keys(records).map(k => k.split('|')[0]))].sort();
+  const rows = [HDR];
+  days.forEach(d => dayRows(d).forEach(r => rows.push(r)));
+  download('attendance_batch1_all.csv', toCsv(rows));
+};
+
+/* =========================================================
+   Boot
+   ========================================================= */
+(async function init(){
+  records = await store.get(K_REC, {});
+  day = new Date().toISOString().slice(0,10);
+  $('sDate').value = day;
+  setSlot(new Date().getHours() < 13 ? 'AM' : 'PM');
+  checkLock();
+  renderAll();
+})();
+</script>

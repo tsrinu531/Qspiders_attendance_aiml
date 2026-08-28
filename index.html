@@ -157,8 +157,8 @@
     </div>
     <div class="tally">
       <div class="n-p"><b id="tPresent">0</b><small>Present</small></div>
-      <div class="n-a"><b id="tAbsent">93</b><small>Absent</small></div>
-      <div><b id="tTotal">93</b><small>Total</small></div>
+      <div class="n-a"><b id="tAbsent">—</b><small>Absent</small></div>
+      <div><b id="tTotal">—</b><small>Total</small></div>
     </div>
   </div>
 </header>
@@ -175,8 +175,8 @@
 <div class="wrap">
   <nav class="tabs" role="tablist">
     <button role="tab" aria-selected="true"  data-panel="p-scan">Scan</button>
-    <button role="tab" aria-selected="false" data-panel="p-list">Students <span class="count">93</span></button>
-    <button role="tab" aria-selected="false" data-panel="p-abs">Absentees <span class="count" id="cAbs">93</span></button>
+    <button role="tab" aria-selected="false" data-panel="p-list">Students <span class="count" id="cAll">—</span></button>
+    <button role="tab" aria-selected="false" data-panel="p-abs">Absentees <span class="count" id="cAbs">—</span></button>
     <button role="tab" aria-selected="false" data-panel="p-rep">Reports</button>
   </nav>
 
@@ -202,6 +202,8 @@
         <div class="r-name" id="rName">—</div>
         <div class="r-meta">
           <div><i>Mobile</i><b class="m" id="rPhone">—</b></div>
+          <div><i>Father</i><b id="rFather">—</b></div>
+          <div><i>Father's mobile</i><b class="m" id="rFPhone">—</b></div>
           <div><i>Proctor</i><b id="rProctor">—</b></div>
           <div><i>Timetable</i><b id="rSection">—</b></div>
           <div><i>Marked</i><b class="m" id="rTime">—</b></div>
@@ -270,111 +272,111 @@
    ========================================================= */
 const PROCS = ["M.Pravallika", "Khasimbee Shaik", "V.Appalakonda", "K.Sowjanya", "D Satyanarayana", "Dr. Kishorekumar Paleti", "K.N. S. L. Kumar", "P.V.V.S.D.Nagendrudu", "Dr. Mangalapalli Vamsikrishna", "P. Annapurna", "Ch D V P Kumari", "Dr.V.Ravi teja", "Sunkavilli Vijaya Nirmala", "Dr.N.Rambabu", "Dr.V.Venkata Kumar", "Showri Rayalu Bandanadam", "Dr.N.Rajesh", "Rayavarapu Sri Divya"];
 const SECS  = ["T1 (NS)", "T2 (MAD)", "T3 (CA1)", "T4 (CA2)", "T6 (CA3)"];
-const RAW = `24B11AI007|ALETI PAVAN|7013358748|17|0
-24B11AI017|ARAVA DEEVENA|9390121705|0|2
-24B11AI023|BADDIPUDI RAJASHEKAR|9063609504|17|0
-24B11AI026|BANDAPALLI ARAVIND|7989011415|0|2
-24B11AI037|BETA ANUSHKA|7396247154|0|3
-24B11AI039|BHIMARAJU SAI SRI AKHIL|9030025604|1|3
-24B11AI050|BUSI AISWARYA|9491577874|2|1
-24B11AI052|BUTTA DEEKSHITHA|8688100347|0|2
-24B11AIO53|BYNABOINA SRINIVASULU|7396101100|0|2
-24B11AI058|CHALLAPALLI MAHESH|6300053667|0|2
-24B11AI061|CHELLABOYINA DINESH ANAND|9603045231|2|1
-24B11AI063|CHIMALA JYOTHIKA|8522087579|0|2
-24B11AI064|CHINNAM HARIKA|9618385723|2|1
-24B11AI096|DULI SHAKEENA BHANU|8919679145|0|3
-24B11AI111|GAMINI LASYA PRIYA|9936512365|3|3
-24B11AI115|GANGULAKURTHI VENKATA SRI RAGHAVENDRA|9398660664|4|3
-24B11AI121|GUNDUBOYINA MANASWINI|9704318195|3|3
-24B11AI122|GEDDAM BHARATH KUMAR|9553413220|5|1
-24B11AI123|GINNE NAVEENA|9492749867|6|2
-24B11AI128|GOWROJU BALA MARUTHI KANAKA SOMA SANTHOSH|9381574476|5|1
-24B11AI130|GUBBALA PRASANNA LAKSHMI|8187055467|7|4
-24B11AI138|GUTHI NAGA SRI HARSHITHA|9966285885|4|2
-24B11AI150|KADALI DHANALAKSHMI SAILAJA|8074315943|5|1
-24B11AI153|KADUPU GIRI DURGA PRASAD|7386320656|3|4
-24B11AI158|KAKARLA SRI SATYA HARI VEERABHADRA|9441058188|8|2
-24B11AI162|KANDADAI SRIVALLIKA|9885435276|3|3
-24B11AI164|KANDULA MANIKANTA|7989291520|4|2
-24B11AI178|KATE TEJASWI|7674994471|5|1
-24B11AI179|KATURI BHAVITHA|7337320992|5|1
-24B11AI186|KOKKU POOJITH RAM VENKAT|9700744475|3|3
-24B11AI191|KOMBATTULA SUVARNA|9701402949|5|1
-24B11AI202|KOTIKALAPUDI VENKATA PALLAVI RIPITHA|9515231934|7|4
-24B11AI225|MADDIPATI UMA DEVI|9491374987|5|1
-24B11AI239|MAMIDI AMRUTHAVALLI SUPRIYA|7382199127|9|2
-24B11AI254|MEDANKI AMANITHA|9492286588|7|4
-24B11AI261|MOHAMMAD YASMEEN|8332878599|10|0
-24B11AI267|MUDIDUDDI HARSHA KUMAR|9959842279|11|3
-24B11AI276|MUNGARA PADMAVATHI|8143586277|9|2
-24B11AI281|NADIMPILLI SHANMUKHA SIMHADRI DEVI|9666783364|9|2
-24B11AI283|ANEPU YAKSHASRI|7989320986|12|2
-24B11AI294|NAYUDU KAVYA PRIYA|9032870860|3|3
-24B11AI314|PADALA VIKRAM KUMAR REDDY|8978852444|7|3
-24B11AI327|PARIMI VARSHITHA DEVI|9888317772|9|2
-24B11AI330|PEDAMALLU RAMA NAGA VEERA SAI RISHITHA|9492351342|5|1
-24B11AI338|PENKE ANAND RAJESH|6304702896|9|2
-24B11AI339|PENTAPATI ANJALI|9032525496|10|0
-24B11AI342|PETTA SHAMINI|9866227868|11|4
-24B11AI350|PODILI S V N R L MANIKANTA|7386346523|10|0
-24B11AI362|RANJITA|9474211902|11|4
-24B11AI365|REDDY PRANATHI RAMYA|9494705296|13|2
-24B11AI366|REDDY SAI VENKATA NAVADEEP SARVAN|8121679145|7|3
-24B11AI368|REPURI V V S S K MAHA LAKSHMI|9618797874|7|3
-24B11AI370|RISHIVARDHAN T|9959764414|13|3
-24B11AI372|RUSHIGALLA THIRAN KUMAR|6281823259|10|0
-24B11AI374|SAJIPALLI PURUSHOTHAMA NAGA SIDDARDHA|9885837097|13|2
-24B11AI380|SAMANTHAKURTHI DEVI SOWMYA|9014842001|13|4
-24B11AI385|SATHI BHAVYA MANI|9849693666|7|4
-24B11AI386|SATHI ISWARYA|9866415777|14|4
-24B11AI394|SHAIK HASAN|7842205787|13|3
-24B11AI398|SIDDHANA DIVYA PRIYANKA|8751909999|13|2
-24B11AI399|SINGALA JASWANTH|8688495297|13|2
-24B11AI405|SRIYANI SINGH|6265700220|13|4
-24B11AI408|SUNKAVILLI LASYA|8919230528|4|2
-24B11AI413|TALARI PAVAN KUMAR|9494813025|1|1
-24B11AI415|TANVI JAIN|8885810101|13|4
-24B11AI422|TIYYAGURA NANDEESWARA REDDY|8247341025|13|2
-24B11AI436|KOTHANURU HARISH|7032034708|13|2
-24B11AI442|VALAVALA KAMAL NARAYANA KARTHIK|7675990755|15|4
-24B11AI448|VARREY NANDA KAILASH|9912168656|1|1
-24B11AI449|USURUPATI KAMALNATH|7013268946|10|0
-24B11AI457|VITHANALA NAGA KARTHIK RAMACHANDRA|8008085756|15|3
-24B11AI460|YAJJALA HEMADRI VENKAT TEJ|9704566741|15|2
-24B11AI465|YAMALA DEVI SRI PRASAD|7981435088|1|1
-24B11AI469|YARLAGADDA MEGHANA DEVI|8125039434|1|1
-24B11AI480|TALIYAKULA TEJA SWAROOP|7382346388|15|2
-25B21AI003|NALLAMILLI SUBHASH|9963823774|15|2
-25B21AI009|PALIKA SUMANTH|9398778272|15|2
-25B21AI011|YALLA SAI GANESH|9000210363|16|2
-25B21AI015|KANURI SAI YASASWINI|9391156227|2|0
-25B21AI016|SAILA RAJA ADITYA GIRISH|9615789888|14|3
-25B21AI017|PAMPANA VANDANA DEVI|9849982278|2|0
-25B21AI020|POTLURI GAYATHRI|9014664093|2|0
-25B21AI021|SATTI SITA RAMASWAMY|9553374757|14|3
-25B21AI027|KADARI HEMA SURYAVATHI|7416477577|2|0
-25B21AI028|PADALA HARIKA MAHESWARI|9347248261|2|0
-25B21AI030|SUNKIREDDY GREESHWANTH REDDY|9885254024|16|3
-25B21AI032|CHIKKAM SUNEETHA|9542495247|2|0
-25B21AI034|LANKA DEEPAK PAL|7993370090|2|0
-25B21AI037|KAKI RAMA SURYA CHARAN|7842947752|16|2
-25B21AI038|KARRI SUHASINI|8790135668|16|3
-25B21AI040|BANALA MAHESWARI|6305598879|2|0
-25B21AI041|KOMMARAJU SHANMUKHA PRIYA|9849541424|16|3
-25B21AI042|VADAMODALA SIRIL HARSHITH|9182872101|16|2
-25B21AI043|PULAGAM NITHIN SRI HARI REDDY|9701023889|16|2
-25B21AI048|MURAMALLA SATYA VEERA DURGA|6309721166|16|3
-25B21AI049|GADUDHULA NARASIMHA PRUDHVI RAJ|6303563320|1|1
-25B21AI050|MADDURI SRI LAKSHMI SARANYA|6309072927|16|3
-25B21AI054|AATLA PAVANI|6301050575|16|3
-25B21AI061|BIRUDA PURNIMA PAVANI GANGA|7989927221|17|3
-25B61AI001|MYNAMPUDI SRI UDAYA CHANDRIKA|9346466548|17|3`;
+const RAW = `24B11AI007|ALETI PAVAN|7013358748|17|0|ALETI YACOBU|9573175014
+24B11AI017|ARAVA DEEVENA|9390121705|0|2|ARAVA VENKANNA|9666729464
+24B11AI023|BADDIPUDI RAJASHEKAR|9063609504|17|0|BADDIPUDI YACOB|9908880623
+24B11AI026|BANDAPALLI ARAVIND|7989011415|0|2|BANDAPALLI NAGARJUNA|9494882608
+24B11AI037|BETA ANUSHKA|7396247154|0|3|BETA SANKARA RAO|7396247154
+24B11AI039|BHIMARAJU SAI SRI AKHIL|9030025604|1|3|BHIMARAJU NUTAN KAMAL VISWANTH|7893622576
+24B11AI050|BUSI AISWARYA|9491577874|2|1|BUSI SATYA NARAYANA|9491577874
+24B11AI052|BUTTA DEEKSHITHA|8688100347|0|2|BUTTA SREENIVASULU|9985656758
+24B11AI053|BYNABOINA SRINIVASULU|7396101100|0|2|BYNABOINA RAMANAIAH|6303563241
+24B11AI058|CHALLAPALLI MAHESH|6300053667|0|2|CHALLAPALLI SARVONNATHA RAO|9182945978
+24B11AI061|CHELLABOYINA DINESH ANAND|9603045231|2|1|CHELLABOYINA SRINIVAS|9948445231
+24B11AI063|CHIMALA JYOTHIKA|8522087579|0|2|CHIMALA VENKATREDDY|9491530903
+24B11AI064|CHINNAM HARIKA|9618385723|2|1|CHINNAM GOPALA KRISHNA|8096237723
+24B11AI096|DULI SHAKEENA BHANU|8919679145|0|3|DULI CHINNA RAO|7382225087
+24B11AI111|GAMINI LASYA PRIYA|9936512365|3|3|GAMINI VENKATA RATNAM|9347036483
+24B11AI115|GANGULAKURTHI VENKATA SRI RAGHAVENDRA|9398660664|4|3|GANGULAKURTHI APPALACHARYULU|9912985180
+24B11AI121|GUNDUBOYINA MANASWINI|9704318195|3|3|GUNDUBOYINA VENKATAIAH|9494614509
+24B11AI122|GEDDAM BHARATH KUMAR|9553413220|5|1|GEDDAM RAJU|9553413220
+24B11AI123|GINNE NAVEENA|9492749867|6|2|GINNE CHANDRA SEKHAR|9492749867
+24B11AI128|GOWROJU BALA MARUTHI KANAKA SOMA SANTHOSH|9381574476|5|1|GOWROJU MALLESWARA RAO|7702875066
+24B11AI130|GUBBALA PRASANNA LAKSHMI|8187055467|7|4|GUBBALA RAMBABU|8187055467
+24B11AI138|GUTHI NAGA SRI HARSHITHA|9966285885|4|2|GUTHI SURYANARAYANA|9966285885
+24B11AI150|KADALI DHANALAKSHMI SAILAJA|8074315943|5|1|KADALI SATYA SRINIVASA RAO|9849372368
+24B11AI153|KADUPU GIRI DURGA PRASAD|7386320656|3|4|KADUPU RAMESH|8106048198
+24B11AI158|KAKARLA SRI SATYA HARI VEERABHADRA|9441058188|8|2|KAKARLA VENU GOPALAM|9381550056
+24B11AI162|KANDADAI SRIVALLIKA|9885435276|3|3|KANDADAI SRINIVASA RAMANUJAN|9160518249
+24B11AI164|KANDULA MANIKANTA|7989291520|4|2|KANDULA REDDIBABU|9652651496
+24B11AI178|KATE TEJASWI|7674994471|5|1|KATE NUKARAJU|9866404471
+24B11AI179|KATURI BHAVITHA|7337320992|5|1|KATURI VINAY KUMAR|7396698456
+24B11AI186|KOKKU POOJITH RAM VENKAT|9700744475|3|3|KOKKU SHESHAGIRI|9949806001
+24B11AI191|KOMBATTULA SUVARNA|9701402949|5|1|KOMBATTULA SRINIVAS|9000978986
+24B11AI202|KOTIKALAPUDI VENKATA PALLAVI RIPITHA|9515231934|7|4|KOTIKALAPUDI SIVA SITA RAMARAO|9989296339
+24B11AI225|MADDIPATI UMA DEVI|9491374987|5|1|MADDIPATI SURESH|9440875676
+24B11AI239|MAMIDI AMRUTHAVALLI SUPRIYA|7382199127|9|2|MAMIDI V V S SRI RAMAMURTHY|7396221331
+24B11AI254|MEDANKI AMANITHA|9492286588|7|4|MEDANKI ASHOK KUMAR|7989496588
+24B11AI261|MOHAMMAD YASMEEN|8332878599|10|0|MOHAMMAD SADIQ|8500809979
+24B11AI267|MUDIDUDDI HARSHA KUMAR|9959842279|11|3|MUDIDUDDI SUBRAHMANYAM|9550717943
+24B11AI276|MUNGARA PADMAVATHI|8143586277|9|2|MUNGARA SURYANARAYANA|9912496363
+24B11AI281|NADIMPILLI SHANMUKHA SIMHADRI DEVI|9666783364|9|2|NADIMPILLI APPALARAJU|9666783364
+24B11AI283|ANEPU YAKSHASRI|7989320986|12|2|ANEPU RAMANUJANEYULU|9849869293
+24B11AI294|NAYUDU KAVYA PRIYA|9032870860|3|3|NAYUDU ANJANEYA SURYARAO|9849870860
+24B11AI314|PADALA VIKRAM KUMAR REDDY|8978852444|7|3|PADALA SATISH REDDY|9573852666
+24B11AI327|PARIMI VARSHITHA DEVI|9888317772|9|2|PARIMI BABURAO|9885944871
+24B11AI330|PEDAMALLU RAMA NAGA VEERA SAI RISHITHA|9492351342|5|1|PEDAMALLU NAGA VEERA RAMARAO|9866332268
+24B11AI338|PENKE ANAND RAJESH|6304702896|9|2|PENKE SRINIVAS|9959294646
+24B11AI339|PENTAPATI ANJALI|9032525496|10|0|PENTAPATI RAJU|9989616229
+24B11AI342|PETTA SHAMINI|9866227868|11|4|PETTA DORAKUMAR BABU|9866227868
+24B11AI350|PODILI S V N R L MANIKANTA|7386346523|10|0|PODILI SRINIVAS|7386346523
+24B11AI362|RANJITA|9474211902|11|4|KARUNA KARAN|7063964521
+24B11AI365|REDDY PRANATHI RAMYA|9494705296|13|2|REDDY VENKATA KRISHNA|9494705296
+24B11AI366|REDDY SAI VENKATA NAVADEEP SARVAN|8121679145|7|3|REDDY MALLIKARJUNA RAO|9493288192
+24B11AI368|REPURI V V S S K MAHA LAKSHMI|9618797874|7|3|REPURI SATYANARAYANA ( LATE)|8019224730
+24B11AI370|RISHIVARDHAN T|9959764414|13|3|T SUBRAMANYAM|9849751377
+24B11AI372|RUSHIGALLA THIRAN KUMAR|6281823259|10|0|RUSHIGALLA DASU|7780299573
+24B11AI374|SAJIPALLI PURUSHOTHAMA NAGA SIDDARDHA|9885837097|13|2|SAJIPALLI SRINIVASA RAO|9885837097
+24B11AI380|SAMANTHAKURTHI DEVI SOWMYA|9014842001|13|4|SAMANTHAKURTHI SUBRAHMANYAM|9347239371
+24B11AI385|SATHI BHAVYA MANI|9849693666|7|4|SATHI SAI BABA REDDY|9849693666
+24B11AI386|SATHI ISWARYA|9866415777|14|4|SATHI SATHI REDDY|9866415777
+24B11AI394|SHAIK HASAN|7842205787|13|3|SHAIK MOULALI|7981944834
+24B11AI398|SIDDHANA DIVYA PRIYANKA|8751909999|13|2|SIDDHANA SIVA SANKAR RAO|7396557777
+24B11AI399|SINGALA JASWANTH|8688495297|13|2|SINGALA THIRUPATHAIAH|9502661048
+24B11AI405|SRIYANI SINGH|6265700220|13|4|T RAVI KUMAR SINGH|7587421709
+24B11AI408|SUNKAVILLI LASYA|8919230528|4|2|SUNKAVILLI VEERA VENKATA SATYANARAYANA|9666403241
+24B11AI413|TALARI PAVAN KUMAR|9494813025|1|1|TALARI HARI MURALI KRISHNA|7989650313
+24B11AI422|TIYYAGURA NANDEESWARA REDDY|8247341025|13|2|TIYYAGURA SURESH REDDY|8328372785
+24B11AI436|KOTHANURU HARISH|7032034708|13|2|KOTHANURU BHASKAR|7893918813
+24B11AI442|VALAVALA KAMAL NARAYANA KARTHIK|7675990755|15|4|VALAVALA SWAMY AYYAPPA|9848210124
+24B11AI448|VARREY NANDA KAILASH|9912168656|1|1|VARREY V V S S N BULLABBAI|9912168656
+24B11AI449|USURUPATI KAMALNATH|7013268946|10|0|U VENUGOPAL|9494734624
+24B11AI457|VITHANALA NAGA KARTHIK RAMACHANDRA|8008085756|15|3|VITHANALA RAJU|8008085756
+24B11AI460|YAJJALA HEMADRI VENKAT TEJ|9704566741|15|2|YAJJALA SRINU|9848953841
+24B11AI465|YAMALA DEVI SRI PRASAD|7981435088|1|1|YAMALA SIVA|8341577908
+24B11AI469|YARLAGADDA MEGHANA DEVI|8125039434|1|1|YARLAGADDA KISHORE KUMAR|8125609434
+24B11AI480|TALIYAKULA TEJA SWAROOP|7382346388|15|2|TALIYAKULA VENKATESWARLU|9491500980
+25B21AI003|NALLAMILLI SUBHASH|9963823774|15|2|NALLAMILLI LAKSHMANA RAO|9963823774
+25B21AI009|PALIKA SUMANTH|9398778272|15|2|PALIKA SRINIVAS|7382524470
+25B21AI011|YALLA SAI GANESH|9000210363|16|2|YALLA JAGADEESH|9000147814
+25B21AI015|KANURI SAI YASASWINI|9391156227|2|0|KANURI APPARAO|8897215056
+25B21AI016|SAILA RAJA ADITYA GIRISH|9615789888|14|3|SAILA GANGADHAR KUMAR|9615789888
+25B21AI017|PAMPANA VANDANA DEVI|9849982278|2|0|PAMPANA DHANARAJU|9676913097
+25B21AI020|POTLURI GAYATHRI|9014664093|2|0|POTLURI VENKATAPATHI|7013158451
+25B21AI021|SATTI SITA RAMASWAMY|9553374757|14|3|SATTI GANI RAJU|9553374757
+25B21AI027|KADARI HEMA SURYAVATHI|7416477577|2|0|KADARI SUBRAMANYAM|9177591888
+25B21AI028|PADALA HARIKA MAHESWARI|9347248261|2|0|PADALA SRINIVASA REDDY|9515489699
+25B21AI030|SUNKIREDDY GREESHWANTH REDDY|9885254024|16|3|SUNKIREDDY SREENIVASULA REDDY|9059507223
+25B21AI032|CHIKKAM SUNEETHA|9542495247|2|0|CHIKKAM SRINU|9848705247
+25B21AI034|LANKA DEEPAK PAL|7993370090|2|0|LANKA VARAHALA RAO|9703355510
+25B21AI037|KAKI RAMA SURYA CHARAN|7842947752|16|2|KAKI SATHI BABU|9849326636
+25B21AI038|KARRI SUHASINI|8790135668|16|3|KARRI RAJESH|8297735669
+25B21AI040|BANALA MAHESWARI|6305598879|2|0|BANALA SATYANARAYANA MURTHY|7997630939
+25B21AI041|KOMMARAJU SHANMUKHA PRIYA|9849541424|16|3|KOMMARAJU SEKHAR|9573399969
+25B21AI042|VADAMODALA SIRIL HARSHITH|9182872101|16|2|VADAMODALA SATYANARAYANA|9948037827
+25B21AI043|PULAGAM NITHIN SRI HARI REDDY|9701023889|16|2|PULAGAM SURESH REDDY|9948096354
+25B21AI048|MURAMALLA SATYA VEERA DURGA|6309721166|16|3|MURAMALLA MAHALAKSHMI|9849871484
+25B21AI049|GADUDHULA NARASIMHA PRUDHVI RAJ|6303563320|1|1|GADUDHULA VENKATA MURALI|9440651579
+25B21AI050|MADDURI SRI LAKSHMI SARANYA|6309072927|16|3|MADDURI GOVINDU RAJULU|9912919397
+25B21AI054|AATLA PAVANI|6301050575|16|3|AATLA BALA BHASKAR RAO|9493647862
+25B21AI061|BIRUDA PURNIMA PAVANI GANGA|7989927221|17|3|BIRUDA VENKATESWARA RAO|9533946365
+25B61AI001|MYNAMPUDI SRI UDAYA CHANDRIKA|9346466548|17|3|MYNAMPUDI SURESH|9121014208`;
 const ROSTER = RAW.split('\n').map(l => {
-  const [roll, name, phone, p, t] = l.split('|');
-  return {roll, name, phone, proctor: PROCS[+p], section: SECS[+t], code: SECS[+t].split(' ')[0],
-          key: (roll + ' ' + name).toUpperCase().replace(/[^A-Z0-9 ]/g,'')};
+  const [roll, name, phone, p, t, father, fphone] = l.split('|');
+  return {roll, name, phone, father, fphone, proctor: PROCS[+p], section: SECS[+t], code: SECS[+t].split(' ')[0],
+          key: (roll + ' ' + name + ' ' + father).toUpperCase().replace(/[^A-Z0-9 ]/g,'')};
 });
+const N = ROSTER.length;
 const BY_ROLL = {};
 ROSTER.forEach(s => BY_ROLL[s.roll] = s);
 
@@ -475,7 +477,7 @@ function banner(state, name, roll){
 function mark(raw){
   const st = (raw && raw.roll) ? raw : findStudent(raw);
   if (!st){
-    readout('bad', {roll: String(raw).trim().toUpperCase(), name: 'Not in Batch-1', proctor: '—', section: '—'}, 'Unknown');
+    readout('bad', {roll: String(raw).trim().toUpperCase(), name: 'Not in Batch-1', proctor: '—', section: '—', father: '—', fphone: '—'}, 'Unknown');
     banner('bad', 'Not in Batch-1', String(raw).trim());
     beep('bad'); return;
   }
@@ -499,6 +501,8 @@ function readout(state, st, flag, at){
   $('rRoll').textContent = st.roll;
   $('rName').textContent = st.name;
   $('rPhone').textContent = st.phone || '—';
+  $('rFather').textContent = st.father || '—';
+  $('rFPhone').textContent = st.fphone || '—';
   $('rProctor').textContent = st.proctor || '—';
   $('rSection').textContent = st.section || '—';
   $('rTime').textContent = at || hhmm(new Date());
@@ -605,6 +609,7 @@ function renderTally(){
   $('tAbsent').textContent = ROSTER.length - p;
   $('tTotal').textContent = ROSTER.length;
   $('cAbs').textContent = ROSTER.length - p;
+  $('cAll').textContent = N;
   $('pCount').textContent = p + ' / ' + ROSTER.length;
 }
 function stuRow(s, hl){
@@ -649,7 +654,7 @@ function renderPresent(){
 }
 function renderChips(){
   const rec = cur();
-  const items = [['', 'All 93']].concat(SECS.map(t => [t, t]));
+  const items = [['', 'All ' + N]].concat(SECS.map(t => [t, t]));
   $('chips').innerHTML = items.map(([v, label]) => {
     const pool = v ? ROSTER.filter(s => s.section === v) : ROSTER;
     const p = pool.filter(s => rec[s.roll]).length;
@@ -664,7 +669,7 @@ function renderStudents(){
   if (q){
     const n = norm(q), w = q.toUpperCase().replace(/[^A-Z0-9 ]/g,'').split(/\s+/).filter(Boolean);
     list = list.filter(s => s.roll.includes(n) || w.every(x => s.key.includes(x)) ||
-                            norm(s.proctor).includes(n) || norm(s.section).includes(n));
+                            norm(s.proctor).includes(n) || norm(s.section).includes(n) || norm(s.father).includes(n));
   }
   if (!list.length){ box.innerHTML = '<div class="empty"><b>No match</b>Try part of the name or the last three digits.</div>'; return; }
   box.innerHTML = list.map(s => stuRow(s, '')).join('');
@@ -672,21 +677,23 @@ function renderStudents(){
 }
 function renderAbsent(){
   const abs = absentees(), box = $('absList');
-  if (!abs.length){ box.innerHTML = '<div class="card"><div class="empty"><b>Full attendance</b>All 93 students are marked present.</div></div>'; return; }
+  if (!abs.length){ box.innerHTML = '<div class="card"><div class="empty"><b>Full attendance</b>All ' + N + ' students are marked present.</div></div>'; return; }
   const groups = {};
   abs.forEach(s => { (groups[groupBy === 'proctor' ? s.proctor : s.section] ||= []).push(s); });
   const names = Object.keys(groups).sort();
   box.innerHTML = names.map((pr, i) =>
     '<div class="proctor card"><div class="proctor-head"><strong>' + esc(pr) + '</strong><em>' + groups[pr].length +
     ' absent</em><button class="btn sm" data-cp="' + i + '">Copy</button></div><table><tbody>' +
-    groups[pr].map(s => '<tr><td class="roll" style="width:33%">' + esc(s.roll) + '</td><td>' + esc(s.name) +
-      '</td><td class="ph" style="width:28%">' + esc(s.phone) + '</td></tr>').join('') +
+    groups[pr].map(s => '<tr><td class="roll">' + esc(s.roll) + '</td><td>' + esc(s.name) +
+      '<div class="pr">' + esc(s.father) + '</div></td><td class="ph" style="width:31%">' + esc(s.phone || '—') +
+      '<div class="ph" style="color:var(--ink-3)">' + esc(s.fphone || '—') + '</div></td></tr>').join('') +
     '</tbody></table></div>').join('');
   box.querySelectorAll('[data-cp]').forEach(b => b.onclick = () => {
     const pr = names[+b.dataset.cp];
     copy(head() + '\n' + (groupBy === 'proctor' ? 'Proctor: ' : 'Timetable: ') + pr +
          '\nAbsent (' + groups[pr].length + '):\n' +
-         groups[pr].map(s => s.roll + '  ' + s.name + '  ' + s.phone +
+         groups[pr].map(s => s.roll + '  ' + s.name + '  ' + (s.phone || 'no mobile') +
+           '\n     Father: ' + s.father + '  ' + (s.fphone || 'no mobile') +
            (groupBy === 'proctor' ? '  [' + s.code + ']' : '  ' + s.proctor)).join('\n'));
   });
 }
@@ -699,8 +706,8 @@ function renderReport(){
     let h = '<table><thead><tr><th>Date</th><th>Morning</th><th>Afternoon</th><th></th></tr></thead><tbody>';
     days.forEach(d => {
       const am = Object.keys(records[d + '|AM'] || {}).length, pm = Object.keys(records[d + '|PM'] || {}).length;
-      h += '<tr><td class="time">' + d + '</td><td class="time">' + am + ' / 93</td><td class="time">' + pm +
-           ' / 93</td><td style="text-align:right"><button class="btn sm" data-d="' + d + '">CSV</button></td></tr>';
+      h += '<tr><td class="time">' + d + '</td><td class="time">' + am + ' / ' + N + '</td><td class="time">' + pm +
+           ' / ' + N + '</td><td style="text-align:right"><button class="btn sm" data-d="' + d + '">CSV</button></td></tr>';
     });
     box.innerHTML = h + '</tbody></table>';
     box.querySelectorAll('[data-d]').forEach(b => b.onclick = () => dayCsv(b.dataset.d));
@@ -730,10 +737,10 @@ function download(name, text){
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(u), 800);
 }
-const HDR = ['Date','Roll Number','Name','Mobile','Timetable','Proctor','Morning','Morning Time','Afternoon','Afternoon Time'];
+const HDR = ['Date','Roll Number','Name','Mobile','Father Name','Father Mobile','Timetable','Proctor','Morning','Morning Time','Afternoon','Afternoon Time'];
 function dayRows(d){
   const am = records[d + '|AM'] || {}, pm = records[d + '|PM'] || {};
-  return ROSTER.map(s => [d, s.roll, s.name, s.phone, s.section, s.proctor,
+  return ROSTER.map(s => [d, s.roll, s.name, s.phone, s.father, s.fphone, s.section, s.proctor,
     am[s.roll] ? 'Present' : 'Absent', am[s.roll] || '',
     pm[s.roll] ? 'Present' : 'Absent', pm[s.roll] || '']);
 }
@@ -789,7 +796,7 @@ function setGroup(g){
 $('gbProc').onclick = () => setGroup('proctor');
 $('gbSec').onclick = () => setGroup('section');
 $('btnAllPresent').onclick = () => {
-  if (!confirm('Mark all 93 students present for ' + (slot === 'AM' ? 'the morning' : 'the afternoon') + '? Then undo the few who are absent.')) return;
+  if (!confirm('Mark all ' + N + ' students present for ' + (slot === 'AM' ? 'the morning' : 'the afternoon') + '? Then undo the few who are absent.')) return;
   const at = hhmm(new Date()), rec = cur();
   ROSTER.forEach(s => { if (!rec[s.roll]) rec[s.roll] = at; });
   save(); renderAll();
@@ -800,17 +807,18 @@ $('btnClear').onclick = () => {
   $('readout').dataset.state = 'idle'; $('rIdle').style.display = 'block'; $('rBody').style.display = 'none';
 };
 $('btnAbsCsv').onclick = () => {
-  const rows = [['Date','Session','Roll Number','Name','Mobile','Timetable','Proctor']];
-  absentees().forEach(s => rows.push([day, slot === 'AM' ? 'Morning' : 'Afternoon', s.roll, s.name, s.phone, s.section, s.proctor]));
+  const rows = [['Date','Session','Roll Number','Name','Mobile','Father Name','Father Mobile','Timetable','Proctor']];
+  absentees().forEach(s => rows.push([day, slot === 'AM' ? 'Morning' : 'Afternoon', s.roll, s.name, s.phone, s.father, s.fphone, s.section, s.proctor]));
   download('absentees_batch1_' + day + '_' + slot + '.csv', toCsv(rows));
 };
 $('btnAbsCopy').onclick = () => {
   const abs = absentees(), groups = {};
   abs.forEach(s => { (groups[groupBy === 'proctor' ? s.proctor : s.section] ||= []).push(s); });
-  let out = head() + '\nPresent: ' + (93 - abs.length) + ' / 93\nAbsent: ' + abs.length + '\n';
+  let out = head() + '\nPresent: ' + (N - abs.length) + ' / ' + N + '\nAbsent: ' + abs.length + '\n';
   Object.keys(groups).sort().forEach(pr => {
     out += '\n' + pr + ' (' + groups[pr].length + ')\n' +
-      groups[pr].map(s => '  ' + s.roll + '  ' + s.name + '  ' + s.phone +
+      groups[pr].map(s => '  ' + s.roll + '  ' + s.name + '  ' + (s.phone || 'no mobile') +
+        '\n       Father: ' + s.father + '  ' + (s.fphone || 'no mobile') +
         (groupBy === 'proctor' ? '  [' + s.code + ']' : '  ' + s.proctor)).join('\n') + '\n';
   });
   copy(out);
